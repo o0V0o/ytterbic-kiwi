@@ -38,6 +38,11 @@ start.onclick = function() {
 	socket.emit("espset", {test:64})
 }
 
+var reload = document.getElementById("reloadBtn")
+reload.onclick = function() {
+	socket.emit("message", {type:'reload'})
+}
+
 /////////////////////////////////////////////
 
 var room = 'foo';
@@ -55,10 +60,15 @@ socket.on('log', function(array) {
   console.log.apply(console, array);
 });
 
+
 // This client receives a message
 socket.on('message', function(message) {
   console.log('Client received message:', message);
-  if (message.type === 'offer') {
+	if (message.type === 'reload') {
+		console.log("reloading")
+		window.location.reload()
+	}
+	if (message.type === 'offer') {
 		pc = handleOffer(message)
   } else if (message.type === 'answer' && pc) {
 		handleAnswer(message, pc)

@@ -3,6 +3,7 @@ var servers = {
 }
 
 var data;
+var showLocal=false;
 
 function sendMessage(msg) {
 	console.log("Client sending message:", msg)
@@ -14,7 +15,7 @@ function createPeerConnection() {
 	pc.onicecandidate = handleIceCandidate(pc)
 	pc.onaddstream = handleAddStream(pc)
 	pc.onremovestream = debugHandler("remove stream")
-	pc.onnegotiationneeded = handleNegotiation(pc)
+	//pc.onnegotiationneeded = handleNegotiation(pc)
 	pc.ondatachannel = handleDataChannel(pc)
 	console.log("> created peer connection", pc)
 	return pc
@@ -27,7 +28,7 @@ function debugHandler(msg) {
 }
 
 var defaultMediaConstraints = {
-	audio:true,
+	audio:false,
 	video:true
 }
 var offerConstraints = {
@@ -52,6 +53,7 @@ function sendOffer(pc, mediaConstraints){
 		pc.addStream(stream);
 	}).catch(debugHandler("whoops. no media."))
 	console.log("> set up initial peer connection", pc)
+	makeOffer(pc)
 	// leave it to the 'negotiationneeded' handler to send the *actual* offer
 	return pc;
 }
@@ -62,7 +64,7 @@ function handleOffer(msg, pc, mediaConstraints) {
 	pc.setRemoteDescription(new RTCSessionDescription(msg.sdp)).then(function () {
 		return navigator.mediaDevices.getUserMedia(mediaConstraints)
 	}).then(function(stream) {
-		document.getElementById('localVideo').srcObject = stream;
+		if(showLocal){document.getElementById('localVideo').srcObject = stream;}
 		return pc.addStream(stream)
 	}).then(function(){
 		return pc.createAnswer()
@@ -100,7 +102,7 @@ function handleIceCandidate(pc) {
 
 function handleAddStream(pc) {
 	return function(event) {
-		console.log("got stream!!!!&!")
+		console.log("got stream!!!!&!", event.stream)
 		document.getElementById('remoteVideo').srcObject = event.stream;
 
 	}
@@ -122,11 +124,27 @@ function handleDataChannel(pc) {
 function notValidDescription(desc) {
 	return desc.sdp === "";
 }
+function makeOffer(pc){
+	console.log("making offer")
+	if (notValidDescription(pc.remoteDescription) && !pc.sentAlready) {
+		console.log("no remote - will send offer")
+		pc.sentAlready = true
+		pc.createOffer(offerConstraints).then(function(offer){
+			return pc.setLocalDescription(offer)
+		}).then(function () {
+			sendMessage({
+				type: 'offer',
+				sdp: pc.localDescription
+			})
+		}).catch(debugHandler("uh oh"))
+	}
+}
 function handleNegotiation(pc){
 	return function() {
 		console.log("need to negotiate!", pc.remoteDescription)
-		if (notValidDescription(pc.remoteDescription)) {
+		if (notValidDescription(pc.remoteDescription) && !pc.sentAlready) {
 			console.log("no remote - will send offer")
+			pc.sentAlready = true
 			pc.createOffer(offerConstraints).then(function(offer){
 				return pc.setLocalDescription(offer)
 			}).then(function () {
