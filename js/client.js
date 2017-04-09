@@ -33,13 +33,18 @@ tnst.onclick = function () {
 	}
 }
 
+var start = document.getElementById("startButton")
+start.onclick = function() {
+	socket.emit("espset", {test:64})
+}
+
 /////////////////////////////////////////////
 
 var room = 'foo';
 // Could prompt for room name:
 // room = prompt('Enter room name:');
 
-// create a websocket to the localhost node server
+// create a websocket to the node server
 var socket = io.connect();
 
 if (room !== '') {
