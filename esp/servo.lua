@@ -12,6 +12,8 @@ function blip(period)
 		for _,servo in pairs(servos) do
 			io[servo.pin] = 1
 		end
+		--note: should use some form of time.now() to determine elapsed time to
+		--avoid time skew from code inside the loop
 		local elapsed = 0
 		for _,servo in ipairs(servos) do
 			tmr.delay(servo.timeout-elapsed)
@@ -36,3 +38,5 @@ function Servo.init(period)
 	period = period or 20
 	blip(period)
 end
+
+return Servo
