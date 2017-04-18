@@ -45,7 +45,6 @@ port.on("open", function() {
 	var cmd = stringify(servo.set(0, 5000))
 	console.log("bytes", servo.set(0, 1500*4), cmd)
 	port.write(stringify(servo.set(0, 1500*4)), debugHandler("write:"))
-	// port.write(stringify([170, 12, 4, 0, 112, 46])) // example byte sequence in manual
 	setInterval(doThing, 1000)
 })
 port.on("error", function(err) { console.log("serial error", err)})

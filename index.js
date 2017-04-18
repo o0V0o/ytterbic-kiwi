@@ -7,6 +7,7 @@ var http = require('http');
 var https = require('https');
 var socketIO = require('socket.io');
 var request = require('request')
+var serial = require('serialport')
 
 var fileServer = new(nodeStatic.Server)();
 var options = {
@@ -16,6 +17,41 @@ var options = {
 var app = https.createServer(options, function(req, res) {
 	fileServer.serve(req, res);
 }).listen(8000);
+
+// debug handler generator function
+function debugHandler(msg) {
+	return function(err) {
+		console.log(msg, err)
+	}
+}
+
+// open the serial port
+var port = new serial("/dev/ttyACM0", {baudRate: 9600, parser: serial.parsers.raw})
+var servo = {
+	cmd : {
+		baud: 0xAA,
+		set: 0x84
+	},
+	set: function(idx, target) {
+		var lower = target & 0x7F
+		var upper = (target >> 7) & 0x7F
+		//return [ servo.cmd.baud, servo.cmd.set, idx, lower, upper ]
+		return [ servo.cmd.set, idx, lower, upper ]
+	},
+	stringify: function(bytes) {
+		var str = ""
+		for (var i=0; i<bytes.length; i++){
+			str = str + String.fromCharCode(bytes[i])
+		}
+		return str
+	}
+}
+port.on("open", function(){
+	console.log("Serial port open")
+})
+port.on("error", debugHandler("serial port error:"))
+port.on("data", debugHandler("serial data:"))
+
 
 //var espAddr = "192.168.1.103"
 var espAddr = "192.168.1.61"
@@ -93,6 +129,12 @@ io.sockets.on('connection', function(socket) {
 			qs: msg
 		}, function(err, resp, body) {
 			console.log("GotResponse", err, body)
+		})
+	})
+	socket.on('servo', function(msg) {
+		//console.log("servo", msg)
+		msg.servos.forEach( function(s) {
+			port.write( servo.stringify( servo.set( s.idx, s.pos ) ) )
 		})
 	})
 

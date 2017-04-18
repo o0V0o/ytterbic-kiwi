@@ -20,6 +20,14 @@ var pc;
 
 /////////////////////////////////////////////
 
+var calibration = {
+	left: { min: 500*4, max: 2300*4 },
+	right: { min: 500*4, max: 2300*4 },
+}
+
+var elements = {
+	gamepad: document.getElementById("gamepad")
+}
 var call = document.getElementById("callBtn")
 call.onclick = function () {
 	pc = sendOffer(null, {audio:true, video:false})
@@ -28,27 +36,52 @@ var reload = document.getElementById("reloadBtn")
 reload.onclick = function() {
 	socket.emit("message", {type:'reload'})
 }
-var espAddr = document.getElementById("espAddr")
-espAddr.addEventListener("input", function() {
-	socket.emit("espaddr", espAddr.value)
-})
+
+//var espAddr = document.getElementById("espAddr")
+//espAddr.addEventListener("input", function() {
+	//socket.emit("espaddr", espAddr.value)
+//})
 
 /////////////////////////////////////////////
 
+
 function zeroOneRange(value){
-	return value+1.0/2
+	return (value+1.0)/2
 }
 
+/*
 function toEspCode(state) {
 	return {
 		filename: "state",
 		escTimeout: (zeroOneRange(state.speed) * 1000) + 1000
 	}
 }
+*/
 
+function lerp(a,b,t) {
+	return a + (b-a)*t
+	//return a*(1-t) + b*t
+}
+
+function steeringAngle(angle) {
+	return {left: lerp(calibration.left.min, calibration.left.max, zeroOneRange(angle)),
+		right: lerp(calibration.right.min, calibration.right.max, zeroOneRange(angle))}
+}
+function toServo(state) {
+	var steering = steeringAngle(state.turn)
+	var msg = { servos: [] }
+	msg.servos.push( {idx: 0, pos: lerp( 4*500, 4*2300, zeroOneRange(state.speed))})
+	msg.servos.push( {idx: 1, pos: steering.left} )
+	msg.servos.push( {idx: 2, pos: steering.right} )
+
+	return msg
+}
+
+var updateInterval = 50
 var checkForGamepad = window.setInterval( function(){
 	if(navigator.getGamepads()[0]){
 		console.log("gamepad connected")
+		elements.gamepad.style.background = "green"
 		window.setInterval(function() {
 			var gamepad = navigator.getGamepads()[0]
 			if(gamepad != undefined){
@@ -59,13 +92,13 @@ var checkForGamepad = window.setInterval( function(){
 					fastBtn: gamepad.buttons[3].pressed
 				}
 				if (pc!=undefined && dataChannel in pc) {
-					pc.dataChannel.send(JSON.stringify(toEspCode(state)))
+					pc.dataChannel.send(JSON.stringify(toServo(state)))
 				} else {
-					socket.emit("espcall", toEspCode(state))
+					socket.emit("servo", toServo(state))
+					console.log(toServo(state).servos[0])
 				}
-				console.log(state)
 			}
-		}, 500)
+		}, updateInterval)
 		window.clearInterval(checkForGamepad)
 	}
 }, 1000)
