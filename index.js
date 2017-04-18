@@ -69,8 +69,24 @@ io.sockets.on('connection', function(socket) {
 		}
 	});
 
+	socket.on('espaddr', function(msg) {
+		espAddr = msg
+	})
+
+	socket.on('espcall', function(msg) {
+		console.log("call a thing", msg)
+		var filename = msg.filename
+		msg.filename = null
+		request({
+			uri: "http://" + espAddr + "/" + filename,
+			method: "GET",
+			qs: msg
+		}, function(err, resp, body) {
+			console.log("GotResponse", err, body)
+		})
+	})
 	socket.on('espset', function(msg) {
-		console.log("do a thinlg", msg, msg.test)
+		console.log("do a thing", msg, msg.test)
 		request({
 			uri: "http://" + espAddr + "/set.lua",
 			method: "GET",

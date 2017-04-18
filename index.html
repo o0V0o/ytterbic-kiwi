@@ -3,27 +3,55 @@
 
 <head>
 
-  <title>Realtime communication with WebRTC</title>
+  <title>Kiwi Controller</title>
 
   <link rel="stylesheet" href="/css/main.css" />
+	<style>
+		body {
+		  font-family: sans-serif;
+		}
 
+		video {
+		  max-width: 100%;
+		  width: 320px;
+		}
+
+		#localVideo {
+			display: none;
+		}
+		#remoteVideo {
+			background-color: black;
+			border-style:solid;
+			border-width: 10px;
+			border-color: lime;
+		}
+		#controls {
+			height: 0.2vh;
+		}
+		h1 {
+			text-align: center;
+		}
+	</style>
 </head>
 
 <body>
 
-  <h1>Realtime communication with WebRTC</h1>
+  <h1>Kiwi Controller</h1>
 
   <div id="videos">
     <video id="localVideo" autoplay muted></video>
     <video id="remoteVideo" autoplay></video>
   </div>
-
-  <div>
-	  <button id="startButton">?</button>
-	  <button id="callButton">Call</button>
-	  <button id="reloadBtn">Reload</button>
-	  <button id="testButton">Test</button>
-  </div>
+	<div id='controls'>
+	  <div>
+		  <button id="callBtn">Call</button>
+		  <button id="reloadBtn">Reload</button>
+			<p> ESP Address: <input type="text" id="espAddr" value="192.168.4.1"/></p>
+	  </div>
+		<div>
+			<button id="test1">Test1</div>
+		</div>
+	</div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/lib/adapter.js"></script>

@@ -20,11 +20,59 @@ var pc;
 
 /////////////////////////////////////////////
 
-var call = document.getElementById("callButton")
+var call = document.getElementById("callBtn")
 call.onclick = function () {
 	pc = sendOffer(null, {audio:true, video:false})
 }
+var reload = document.getElementById("reloadBtn")
+reload.onclick = function() {
+	socket.emit("message", {type:'reload'})
+}
+var espAddr = document.getElementById("espAddr")
+espAddr.addEventListener("input", function() {
+	socket.emit("espaddr", espAddr.value)
+})
 
+/////////////////////////////////////////////
+
+function zeroOneRange(value){
+	return value+1.0/2
+}
+
+function toEspCode(state) {
+	return {
+		filename: "state",
+		escTimeout: (zeroOneRange(state.speed) * 1000) + 1000
+	}
+}
+
+var checkForGamepad = window.setInterval( function(){
+	if(navigator.getGamepads()[0]){
+		console.log("gamepad connected")
+		window.setInterval(function() {
+			var gamepad = navigator.getGamepads()[0]
+			if(gamepad != undefined){
+				var state = {
+					speed: -gamepad.axes[3],
+					turn: gamepad.axes[0],
+					goBtn: gamepad.buttons[5].pressed,
+					fastBtn: gamepad.buttons[3].pressed
+				}
+				if (pc!=undefined && dataChannel in pc) {
+					pc.dataChannel.send(JSON.stringify(toEspCode(state)))
+				} else {
+					socket.emit("espcall", toEspCode(state))
+				}
+				console.log(state)
+			}
+		}, 500)
+		window.clearInterval(checkForGamepad)
+	}
+}, 1000)
+navigator.getGamepads()[0]
+
+/////////////////////////////////////////////
+/*
 var tnst = document.getElementById("testButton")
 tnst.onclick = function () {
 	if (pc) {
@@ -37,11 +85,7 @@ var start = document.getElementById("startButton")
 start.onclick = function() {
 	socket.emit("espset", {test:64})
 }
-
-var reload = document.getElementById("reloadBtn")
-reload.onclick = function() {
-	socket.emit("message", {type:'reload'})
-}
+*/
 
 /////////////////////////////////////////////
 

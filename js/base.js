@@ -28,7 +28,7 @@ function debugHandler(msg) {
 }
 
 var defaultMediaConstraints = {
-	audio:false,
+	audio:true,
 	video:true
 }
 var offerConstraints = {
