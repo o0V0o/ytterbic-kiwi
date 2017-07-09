@@ -13,7 +13,8 @@
 
 		video {
 		  max-width: 100%;
-		  width: 320px;
+		  width: 600px;
+		  height: 600px;
 		}
 
 		#localVideo {
@@ -24,6 +25,7 @@
 			border-style:solid;
 			border-width: 10px;
 			border-color: lime;
+			transform: rotate(90deg);
 		}
 		#controls {
 			height: 0.2vh;
@@ -74,7 +76,16 @@
 		  <button id="callBtn">Call</button>
 		  <button id="reloadBtn">Reload</button>
 		  <div id="gamepad" class='indicator tooltip'><span class='tooltiptext'>Gamepad Connected</span></div>
-			<p> ESP Address: <input type="text" id="espAddr" value="192.168.4.1"/></p>
+		  <!--<p> ESP Address: <input type="text" id="espAddr" value="192.168.4.1"/></p>-->
+		  <p> Motor Enabled: <input type="checkbox", value=true, id="motorEnable" /> </p>
+		  <p> Gamepad Enabled: <input type="checkbox", value=true, id="gamepadEnable" /> </p>
+		<p> Servo Calibrate: <input type="text", id="servoId", value=2 /> <input type="number" id="servoPos" value=5600 step=1 min=2000 max=9200 /> <input type="checkbox" id='calibrateActive' /> </p>
+		<p> ESC: <span id="esc">?</span></p>
+		<p> Left Steering: <span id="left">?</span></p>
+		<p> Right Steering: <span id="right">?</span></p>
+		<p> Left Brake: <span id="leftbrake">?</span></p>
+		<p> Right Brake: <span id="rightbrake">?</span></p>
+		<p> servo6: <span id="servo6">?</span></p>
 	  </div>
 		<div>
 			<button id="test1">Test1</div>

@@ -1,5 +1,5 @@
 var servers = {
-	'iceServers': []
+	'iceServers': [{url:'stun:stun.l.google.com:19302'}]
 }
 
 var data;
@@ -17,6 +17,10 @@ function createPeerConnection() {
 	pc.onremovestream = debugHandler("remove stream")
 	//pc.onnegotiationneeded = handleNegotiation(pc)
 	pc.ondatachannel = handleDataChannel(pc)
+	pc.oniceconnectionstatechange = function(err){
+		console.log('ICE stuff:', err)
+	       console.log('ICE state: ',pc.iceConnectionState);
+	}
 	console.log("> created peer connection", pc)
 	return pc
 }
